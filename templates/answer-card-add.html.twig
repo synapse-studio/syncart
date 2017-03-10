@@ -1,0 +1,33 @@
+<div class="modal fade" id="modal-answer-cart-add" tabindex="-1" role="dialog" aria-labelledby="CallMeLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="answer-cart-add">
+          <h2>Спасибо,</h2>
+          {{ data.node_link }}
+          {% if(data.brend != '') %}
+            , бренд: {{ data.brend }}, успешно добавлен в корзину
+          {% else %}
+          , успешно добавлен в корзину
+          {% endif %}
+          <div class="answer-cart-button">
+            <span class="cart-close">Продолжить покупки</span>
+            <span class="cart-page">{{ data.cart_link }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
+</div> 
+
+
+
+
+
+
+
+
+

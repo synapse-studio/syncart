@@ -1,0 +1,14 @@
+cartadd:
+  path: '/syncart/add/{nid}/{pid}'
+  defaults:
+    _controller: '\Drupal\syncart\Controller\CartLink::additem'
+  requirements:
+    _permission: 'access content'
+cartpage:
+  path: '/syncart/{cid}'
+  defaults:
+    _controller: '\Drupal\syncart\Controller\Page::page'
+  requirements:
+    _permission: 'access content'
+
+

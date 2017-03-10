@@ -1,0 +1,44 @@
+<div id="cart-total">
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Итог:</h3>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-6">
+      <p>Для оформления заказа нажмите кнопку <a class="checkout" href="/checkout/{{ data.cid }}">«оформить заказ»</a>.<br/>
+      По тем товарам, которые указаны под заказ Наш менеджер свяжеться с Вами и проконсультирует Вас, 
+      либо Вы можете уточнить всю информацию по телефону (8172) 72-88-88</p>
+    </div>
+    <div class="col-xs-2"></div>
+    <div class="col-xs-4">
+      <ul>
+        {% for val in data.total %} 
+          {% if(val.currency != 'order') %}   
+            <li><span class="count">товаров: {{ val.count }}</span> на сумму <span class="sum">{{ val.total }}</span> {{ val.currency }}</li>
+          {% endif %}
+        {% endfor %} 
+      
+        {% for val in data.total %}
+          {% if(val.currency == 'order') %}   
+            <li><span class="count">товаров: {{ val.count }}</span> под заказ</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="checkout-block"><a class="checkout" href="/checkout/{{ data.cid }}">Оформить заказ</a></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
