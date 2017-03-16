@@ -1,0 +1,4 @@
+syncart.settings:
+  title: 'Syncart Settings'
+  parent: system.admin_config_system
+  route_name: syncart.settings

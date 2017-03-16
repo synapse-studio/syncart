@@ -6,27 +6,18 @@
  */
 
 use Drupal\views\ViewExecutable;
-use Drupal\commerce_cart\CartSession;
-use Drupal\syncart\Controller\CartProvider;
+use Drupal\syncart\Controller\SynCart;
 use Drupal\Core\Url;
+use Drupal\Core\Link;
 
 /**
  * Implements hook_views_pre_view().
  */
 function syncart_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
 
-  $account = \Drupal::currentUser();
-  $session = \Drupal::request()->getSession();
-  $cartSession = new CartSession($session);
-
-  $cart_provider = new CartProvider($cartSession);
-  $cart = $cart_provider->getCart($account);
-
-  if ($cart) {
-    $cid = $cart->id();
-  }
-
   if ($view->id() == 'commerce_cart_form' && ($display_id == 'block_1' || $display_id == 'block_2')) {
+    $cartManager = new SynCart(FALSE);
+    $cid = $cartManager->cart->id();
     if (!empty($cid)) {
       $args[0] = $cid;
     }
@@ -48,7 +39,8 @@ function syncart_node_view(array &$build, $entity, $display, $view_mode) {
   $node_type = $entity->getType();
   if ($node_type == 'tovar') {
     $nid = $entity->id();
-    $attr = ['attributes' => ['class' => ['use-ajax']]];
+
+    $options = ['attributes' => ['class' => ['use-ajax', 'syncart-link']]];
     $variations = $entity->field_tovar_variation->getValue();
     foreach ($variations as $key => $variation) {
       $pid = $variation['target_id'];
@@ -57,11 +49,18 @@ function syncart_node_view(array &$build, $entity, $display, $view_mode) {
         'pid' => $pid,
       ];
       $url = Url::fromRoute('cartadd', $extra);
-
-      $build['syncart']['cart-' . $pid] = [
-        'link' => ['#markup' => \Drupal::l('В корзину', $url, $attr)],
-        'form' => \Drupal::formBuilder()->getForm('Drupal\syncart\Form\AddToCart', $extra),
-      ];
+      $url->setOptions($options);
+      $config = \Drupal::config('syncart.settings');
+      if ($config->get('link')) {
+        $build['syncart']['cart-' . $pid]['link'] = [
+          '#markup' => Link::fromTextAndUrl('В корзину', $url)->toString(),
+        ];
+      }
+      if ($config->get('form')) {
+        $build['syncart']['cart-' . $pid]['form'] = [
+          'form' => \Drupal::formBuilder()->getForm('Drupal\syncart\Form\AddToCart', $extra),
+        ];
+      }
     }
   }
 }

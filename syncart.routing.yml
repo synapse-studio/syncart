@@ -10,5 +10,10 @@ cartpage:
     _controller: '\Drupal\syncart\Controller\Page::page'
   requirements:
     _permission: 'access content'
-
-
+syncart.settings:
+  path: '/admin/config/synapse/syncart'
+  defaults:
+    _form: '\Drupal\syncart\Form\Settings'
+    _title: 'Syncart Settings'
+  requirements:
+    _permission: 'administer nodes'

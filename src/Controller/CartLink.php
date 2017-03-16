@@ -4,11 +4,11 @@ namespace Drupal\syncart\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Drupal\block\Entity\Block;
 
 /**
- * @see \Drupal\Core\Form\FormBase
+ * CartLink.
  */
 class CartLink extends ControllerBase {
 
@@ -16,34 +16,29 @@ class CartLink extends ControllerBase {
    * Add to cart.
    */
   public function additem($nid, $pid) {
-    // Make sure you don't trust the URL to be safe! Always check for exploits.
     if (is_numeric($pid)) {
 
-      $quantity = 1;
-      if(!empty($_POST['count'])) $quantity = $_POST['count'];
+      $data = CartAdder::addWithLinks($nid, $pid);
 
-      $add = \Drupal\syncart\Controller\CartAdder::AddToCart($nid, $pid, $quantity);
-      //drupal_set_message('Добавлено в корзину');
-      //$response = new \Symfony\Component\HttpFoundation\RedirectResponse('/node/' . $nid);
-      //$response->send();
-    }else{
+      $html['#theme'] = 'answer-card-add';
+      $html['#data'] = $data;
+      $html['#data']['title'] = '';
+
+      $output['block'] = drupal_render($html);
+
+      $block_load = Block::load('views_block__commerce_cart_form_block_1');
+      if ($block_load) {
+        $block_cart = \Drupal::entityTypeManager()
+          ->getViewBuilder('block')
+          ->view($block_load);
+        $output['block_cart'] = drupal_render($block_cart);
+      }
+
+      return new JsonResponse($output);
+    }
+    else {
       throw new AccessDeniedHttpException();
     }
-
-    $html['#theme'] = 'answer-card-add';
-    $html['#data'] = $add;
-    $html['#data']['title'] = '';
-    //$output = drupal_render($html);
-
-    $block_load = \Drupal\block\Entity\Block::load('views_block__commerce_cart_form_block_2');
-    $block_cart = \Drupal::entityTypeManager()
-      ->getViewBuilder('block')
-      ->view($block_load);
-
-    $output['block'] = drupal_render($html);
-    $output['block_cart'] = drupal_render($block_cart);
-
-    return new JsonResponse($output);
 
   }
 
