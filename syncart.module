@@ -1,32 +1,39 @@
 <?php
-//use Drupal\Core\Form\FormStateInterface;
-use \Drupal\Core\Entity\EntityInterface;
-use \Drupal\Core\Entity\Display\EntityViewDisplayInterface;
-
 
 /**
- * Implements hook_views_pre_view(().
+ * @file
+ * Syncart: syncart.module.
  */
-function syncart_views_pre_view(Drupal\views\ViewExecutable $view, $display_id, array &$args) {
+
+use Drupal\views\ViewExecutable;
+use Drupal\commerce_cart\CartSession;
+use Drupal\syncart\Controller\CartProvider;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_views_pre_view().
+ */
+function syncart_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
 
   $account = \Drupal::currentUser();
   $session = \Drupal::request()->getSession();
-  $cartSession = new \Drupal\commerce_cart\CartSession($session);
+  $cartSession = new CartSession($session);
 
-  $CartProvider = new \Drupal\syncart\Controller\CartProvider($cartSession);
-  $cart = $CartProvider->getCart($account);
+  $cart_provider = new CartProvider($cartSession);
+  $cart = $cart_provider->getCart($account);
 
-  if($cart) {
+  if ($cart) {
     $cid = $cart->id();
   }
 
-  if($view->id() == 'commerce_cart_form' && ($display_id == 'block_1' || $display_id == 'block_2')) {
-    if(!empty($cid)) {
+  if ($view->id() == 'commerce_cart_form' && ($display_id == 'block_1' || $display_id == 'block_2')) {
+    if (!empty($cid)) {
       $args[0] = $cid;
     }
 
   }
 }
+
 /**
  * Implements hook_page_attachments().
  */
@@ -37,47 +44,34 @@ function syncart_page_attachments(array &$page) {
 /**
  * Implements hook_view().
  */
-function syncart_node_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+function syncart_node_view(array &$build, $entity, $display, $view_mode) {
   $node_type = $entity->getType();
-  if($node_type == 'tovar'){
+  if ($node_type == 'tovar') {
     $nid = $entity->id();
-    $output = "";
-    $pid = false;
+    $attr = ['attributes' => ['class' => ['use-ajax']]];
+    $variations = $entity->field_tovar_variation->getValue();
+    foreach ($variations as $key => $variation) {
+      $pid = $variation['target_id'];
+      $extra = [
+        'nid' => $nid,
+        'pid' => $pid,
+      ];
+      $url = Url::fromRoute('cartadd', $extra);
 
-    if (isset($build['field_tovar_variation']['#items'])){
-      $items = $build['field_tovar_variation']['#items'];
-      foreach($items as $product) {
-        $pid = $product->entity->id();
-        //$output .= "pid=" . $pid;
-        $extra = [
-          'nid' => $nid,
-          'pid' => $pid,
-        ];
-        /*
-        $build['field_product_variation'] = [];
-        $build['field_product_variation']['cart-'.$pid] = [
-          //['#markup' => '<a class="btn" href="/syncart/add/'.$nid.'/'.$pid.'" class="syncart">Добавить в корзину</a>'],
-          \Drupal::formBuilder()->getForm('Drupal\syncart\Form\AddToCart', $extra ),
-        ];*/
-      }
-    }
-    if ($pid) {
-      $build['syncart'] = [
-         '#markup' => \Drupal::l(
-            'В корзину',
-            \Drupal\Core\Url::fromRoute('cartadd', ['nid' => $nid, 'pid' => $pid]),
-            ['attributes' => ['class' => ['use-ajax']]]
-         )
-         //'#markup' => '<button class="btn btn-xs btn-warning button">В корзину</button>',
-         //'#allowed_tags' => ['button'],
+      $build['syncart']['cart-' . $pid] = [
+        'link' => ['#markup' => \Drupal::l('В корзину', $url, $attr)],
+        'form' => \Drupal::formBuilder()->getForm('Drupal\syncart\Form\AddToCart', $extra),
       ];
     }
   }
 }
-function _syncart_ajax(){
-  return true;
-}
 
+/**
+ * Ajax().
+ */
+function _syncart_ajax() {
+  return TRUE;
+}
 
 /**
  * Implements hook_theme().
