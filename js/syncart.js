@@ -10,7 +10,7 @@
       e.preventDefault();
 
       count = 1;
-      i$('.node-product .to-card input').length) {
+      if ($('.node-product .to-card input').length) {
         count = $('.node-product .to-card input').val();
           if (count == '') {
             count = 1;
