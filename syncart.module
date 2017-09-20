@@ -7,8 +7,7 @@
 
 use Drupal\views\ViewExecutable;
 use Drupal\syncart\Controller\SynCart;
-use Drupal\Core\Url;
-use Drupal\Core\Link;
+use Drupal\syncart\Controller\ProductVariationAlter;
 
 /**
  * Implements hook_views_pre_view().
@@ -36,42 +35,7 @@ function syncart_page_attachments(array &$page) {
  * Implements hook_view().
  */
 function syncart_node_view(array &$build, $entity, $display, $view_mode) {
-  $node_type = $entity->getType();
-  if ($node_type == 'tovar') {
-    $nid = $entity->id();
-
-    $options = ['attributes' => ['class' => ['use-ajax', 'syncart-link']]];
-    if (property_exists($entity, 'field_tovar_variation')) {
-      $variations = $entity->field_tovar_variation->getValue();
-      foreach ($variations as $key => $variation) {
-        $pid = $variation['target_id'];
-        $extra = [
-          'nid' => $nid,
-          'pid' => $pid,
-        ];
-        $url = Url::fromRoute('cartadd', $extra);
-        $url->setOptions($options);
-        $config = \Drupal::config('syncart.settings');
-        if ($config->get('link')) {
-          $build['syncart']['cart-' . $pid]['link'] = [
-            '#markup' => Link::fromTextAndUrl('В корзину', $url)->toString(),
-          ];
-        }
-        if ($config->get('form')) {
-          $build['syncart']['cart-' . $pid]['form'] = [
-            'form' => \Drupal::formBuilder()->getForm('Drupal\syncart\Form\AddToCart', $extra),
-          ];
-        }
-      }
-    }
-  }
-}
-
-/**
- * Ajax().
- */
-function _syncart_ajax() {
-  return TRUE;
+  ProductVariationAlter::init($build, $entity);
 }
 
 /**

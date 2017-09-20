@@ -9,7 +9,6 @@ namespace Drupal\syncart\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-
 use Drupal\Core\Link;
 use Drupal\synhelper\Controller\AjaxResult;
 use Drupal\syncart\Controller\SynCart;
@@ -23,21 +22,20 @@ class AddToCart extends FormBase {
    * F: cartAdd.
    */
   public function cartAdd(array &$form, FormStateInterface $form_state) {
-    $pid = $form_state->cart['pid'];
-    $nid = $form_state->cart['nid'];
+    $nid = $form_state->getValue("nid");
+    $vid = $form_state->getValue("variation-$nid");
     $quantity = 1;
 
     $cartManager = new SynCart();
-    $variation = $cartManager->add($pid);
+    $variation = $cartManager->add($vid);
 
-    $otvet = '';
+    $otvet = "";
     $otvet .= "cartAdd:\n";
-    $otvet .= "nid:" . $nid . "\n";
-    $otvet .= "pid:" . $pid . "\n";
+    $otvet .= "nid: $nid\n";
+    $otvet .= "pid: $vid\n";
+    $otvet .= "Товар добавлен в " . Link::createFromRoute('вашу корзину', 'commerce_cart.page')->toString();
 
-    $otvet  .= 'Товар добавлен в ' . Link::createFromRoute('вашу корзину', 'commerce_cart.page')->toString();
-
-    return AjaxResult::ajax('cart-pid-' . $pid, $otvet);
+    return AjaxResult::ajax("cart-$nid", $otvet);
   }
 
   /**
@@ -52,10 +50,32 @@ class AddToCart extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $extra = NULL) {
     $cart = $extra;
-    $form_state->cart = $cart;
+    $nid = $extra['nid'];
+    $variations = $extra['variations'];
+    $form_state->nid = $nid;
+    $form_state->variations = $variations;
     $form_state->setCached(FALSE);
-    $form['#suffix'] = "<div class='cart-result' id='cart-pid-{$cart['pid']}'></div>";
-    $form['cart-add'] = AjaxResult::button('::cartAdd', 'Добавить в корзину');
+    $form["#suffix"] = "<div class='cart-result' id='cart-$nid'></div>";
+    $form["nid"] = [
+      '#type' => 'hidden',
+      '#value' => $nid,
+    ];
+    if (count($variations) == 1) {
+      $vid = array_shift($variations);
+      $form["variation-$nid"] = [
+        '#type' => 'hidden',
+        '#value' => $vid,
+      ];
+      $form["cart-add-$nid-$vid"] = AjaxResult::button('::cartAdd', 'Добавить в корзину');
+    }
+    elseif (count($variations) > 1) {
+      $form['variation'] = [
+        '#type' => 'select',
+        '#options' => $variations,
+      ];
+      $form["cart-add-$nid"] = AjaxResult::button('::cartAdd', 'Добавить в корзину');
+    }
+
     return $form;
   }
 
