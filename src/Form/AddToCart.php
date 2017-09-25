@@ -70,9 +70,16 @@ class AddToCart extends FormBase {
       $form["cart-add-$nid-$vid"] = AjaxResult::button('::cartAdd', 'Добавить в корзину');
     }
     elseif (count($variations) > 1) {
-      $form['variation'] = [
+      $options = [];
+      foreach ($variations as $key => $value) {
+        $variation = \Drupal::entityManager()->getStorage('commerce_product_variation')->load($value);
+        $price = $variation->getPrice();
+        $price_human = number_format($price->getNumber(), 2) . " " . $price->getCurrencyCode();
+        $options[$value] = $variation->title->value . " $price_human";
+      }
+      $form["variation-$nid"] = [
         '#type' => 'select',
-        '#options' => $variations,
+        '#options' => $options,
       ];
       $form["cart-add-$nid"] = AjaxResult::button('::cartAdd', 'Добавить в корзину');
     }
