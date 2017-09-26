@@ -44,8 +44,14 @@ class Settings extends ConfigFormBase {
     $patch = DRUPAL_ROOT . "/$syncart/assets/commerce_product.module.diff";
     $command = "patch $file < $patch";
     $otvet .= "$command\n";
-    exec($command, $result);
-    return AjaxResult::ajax($this->wrapper, $otvet, $result);
+    exec($command, $result1);
+    $file = DRUPAL_ROOT . "/$commerce/src/Entity/ProductVariation.php";
+    $patch = DRUPAL_ROOT . "/$syncart/assets/ProductVariation.php.diff";
+    $command = "patch $file < $patch";
+    $otvet .= "$command\n";
+    exec($command, $result2);
+    $cmd = array_merge($result1, $result2);
+    return AjaxResult::ajax($this->wrapper, $otvet, $cmd);
   }
 
   /**
@@ -56,7 +62,7 @@ class Settings extends ConfigFormBase {
 
     $form['patch'] = [
       '#type' => 'details',
-      '#title' => $this->t('Patch Commerce commerce_product.module'),
+      '#title' => $this->t('Patch Commerce commerce_product.module & src/Entity/ProductVariation.php'),
       '#suffix' => '<div id="' . $this->wrapper . '"></div>',
       'exec'  => AjaxResult::button('::ajaxPatch', 'Patch exec'),
     ];

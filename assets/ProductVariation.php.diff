@@ -1,0 +1,28 @@
+--- ProductVariation.php++	2017-09-20 11:14:34.000000000 +0300
++++ ProductVariation.php	2017-09-26 16:21:15.000000000 +0300
+@@ -335,10 +335,14 @@
+       ->getStorage('commerce_product_variation_type')
+       ->load($this->bundle());
+ 
++    $title_import = $this->title->value;
+     if ($variation_type->shouldGenerateTitle()) {
+       $title = $this->generateTitle();
+       $this->setTitle($title);
+     }
++    if (!$title) {
++      $this->setTitle($title_import);
++    }
+   }
+ 
+   /**
+@@ -353,6 +357,10 @@
+       return '';
+     }
+ 
++    if (!is_object($this->getProduct())) {
++      return '';
++    }
++
+     $product_title = $this->getProduct()->getTitle();
+     if ($attribute_values = $this->getAttributeValues()) {
+       $attribute_labels = EntityHelper::extractLabels($attribute_values);
