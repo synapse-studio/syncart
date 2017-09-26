@@ -25,6 +25,7 @@ class AddToCart extends FormBase {
     $nid = $form_state->getValue("nid");
     $nid = $_POST['nid'];
     $vid = $form_state->getValue("variation-$nid");
+    $vid = $_POST["variation-$nid"];
     $quantity = 1;
 
     $cartManager = new SynCart();
