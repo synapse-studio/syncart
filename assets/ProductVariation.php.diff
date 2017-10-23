@@ -1,28 +1,30 @@
 --- ProductVariation.php++	2017-09-20 11:14:34.000000000 +0300
 +++ ProductVariation.php	2017-09-26 16:21:15.000000000 +0300
-@@ -335,10 +335,14 @@
-       ->getStorage('commerce_product_variation_type')
-       ->load($this->bundle());
+@@ -67,15 +67,15 @@ class ProductVariation extends ContentEntityBase implements ProductVariationInte
+   public function toUrl($rel = 'canonical', array $options = []) {
+     // StringFormatter assumes 'revision' is always a valid link template.
+     if (in_array($rel, ['canonical', 'revision'])) {
+-      $route_name = 'entity.commerce_product.canonical';
++      $route_name = 'entity.node.canonical';
+       $route_parameters = [
+-        'commerce_product' => $this->getProductId(),
++        'node' => $this->getProductId(),
+       ];
+       $options = [
+         'query' => [
+           'v' => $this->id(),
+         ],
+-        'entity_type' => 'commerce_product',
++        'entity_type' => 'node',
+         'entity' => $this->getProduct(),
+         // Display links by default based on the current language.
+         'language' => $this->language(),
+@@ -385,7 +385,7 @@ class ProductVariation extends ContentEntityBase implements ProductVariationInte
+     $fields['product_id'] = BaseFieldDefinition::create('entity_reference')
+       ->setLabel(t('Product'))
+       ->setDescription(t('The parent product.'))
+-      ->setSetting('target_type', 'commerce_product')
++      ->setSetting('target_type', 'node')
+       ->setReadOnly(TRUE)
+       ->setDisplayConfigurable('view', TRUE);
  
-+    $title_import = $this->title->value;
-     if ($variation_type->shouldGenerateTitle()) {
-       $title = $this->generateTitle();
-       $this->setTitle($title);
-     }
-+    if (!$title) {
-+      $this->setTitle($title_import);
-+    }
-   }
- 
-   /**
-@@ -353,6 +357,10 @@
-       return '';
-     }
- 
-+    if (!is_object($this->getProduct())) {
-+      return '';
-+    }
-+
-     $product_title = $this->getProduct()->getTitle();
-     if ($attribute_values = $this->getAttributeValues()) {
-       $attribute_labels = EntityHelper::extractLabels($attribute_values);
