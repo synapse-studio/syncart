@@ -56,6 +56,32 @@ class SynCart extends ControllerBase {
     $this->cartProvider = $cartProvider;
     $this->cartManager = $cartManager;
     $this->cartManager = $cartManager;
+    
+    // Объединяем корзины пользователя если их несколько.
+    $carts = $cartProvider->getCarts();
+    if (count($carts) > 1) {
+      $goods = [];
+      foreach ($carts as $key => $otherCart) {
+        foreach ($otherCart->getItems() as $cartItem) {
+          $otherCart->removeItem($cartItem);
+          $pid = $cartItem->get('purchased_entity')->target_id;
+          $quantity = $cartItem->get('quantity')->value;
+          if (isset($goods[$pid])) {
+            $goods[$pid] += $quantity;
+          }
+          else {
+            $goods[$pid] = $quantity;
+          }
+        }
+        $otherCart->save();
+        if ($otherCart->id() !== $cart->id()) {
+          $otherCart->delete();
+        }
+      }
+      foreach ($goods as $pid => $quantity) {
+        $this->add($pid, $quantity);
+      }
+    }
   }
 
   /**
