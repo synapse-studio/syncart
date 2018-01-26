@@ -30,7 +30,7 @@ class SynCart extends ControllerBase {
   /**
    * Constructs a new Cart.
    */
-  public function __construct($initcart = TRUE) {
+  public function __construct($initcart = TRUE, $cart = FALSE) {
     $entityTM = $this->entityTypeManager();
     $currentUser = $this->currentUser();
     $session = \Drupal::request()->getSession();
@@ -43,7 +43,9 @@ class SynCart extends ControllerBase {
     // Store & cart.
     $order_type = 'default';
     $store = $this->getStore();
-    $cart = $cartProvider->getCart($order_type, $store);
+    if (!$cart) {
+      $cart = $cartProvider->getCart($order_type, $store);
+    }
     if (!$cart && $initcart) {
       $cart = $cartProvider->createCart($order_type, $store);
     }
