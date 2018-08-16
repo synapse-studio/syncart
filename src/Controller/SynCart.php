@@ -30,22 +30,22 @@ class SynCart extends ControllerBase {
   /**
    * Constructs a new Cart.
    */
-  public function __construct($initcart = TRUE, $cart = FALSE) {
+  public function __construct($initcart = FALSE) {
     $entityTM = $this->entityTypeManager();
     $currentUser = $this->currentUser();
     $session = \Drupal::request()->getSession();
     $cartSession = new CartSession($session);
-    $cartProvider = new CartProvider($entityTM, $currentUser, $cartSession);
-    $eventDispatcher = new EventDispatcher();
-    $orderItemMatcher = new OrderItemMatcher($eventDispatcher);
-    $cartManager = new CartManager($entityTM, $orderItemMatcher, $eventDispatcher);
+    // $cartProvider = new CartProvider($entityTM, $currentUser, $cartSession);
+    $cartProvider = \Drupal::service('commerce_cart.cart_provider');
+    // $eventDispatcher = new EventDispatcher();
+    // $orderItemMatcher = new OrderItemMatcher($eventDispatcher);
+    // $cartManager = new CartManager($entityTM, $orderItemMatcher, $eventDispatcher);
+    $cartManager = \Drupal::service('commerce_cart.cart_manager');
 
     // Store & cart.
     $order_type = 'default';
     $store = $this->getStore();
-    if (!$cart) {
-      $cart = $cartProvider->getCart($order_type, $store);
-    }
+    $cart = $cartProvider->getCart($order_type, $store);
     if (!$cart && $initcart) {
       $cart = $cartProvider->createCart($order_type, $store);
     }
@@ -58,7 +58,7 @@ class SynCart extends ControllerBase {
     $this->cartProvider = $cartProvider;
     $this->cartManager = $cartManager;
     $this->cartManager = $cartManager;
-    
+
     // Объединяем корзины пользователя если их несколько.
     $carts = $cartProvider->getCarts();
     if (count($carts) > 1) {
