@@ -16,7 +16,8 @@ class CartLink extends ControllerBase {
    * Add to cart.
    */
   public function additem($nid, $pid) {
-    if (is_numeric($pid)) {
+    $ajax = \Drupal::request()->request->get('_drupal_ajax');
+    if ($ajax && is_numeric($pid)) {
 
       $data = CartAdder::addWithLinks($nid, $pid);
 
