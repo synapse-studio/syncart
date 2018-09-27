@@ -33,15 +33,9 @@ class SynCart extends ControllerBase {
   public function __construct($initcart = FALSE) {
     $entityTM = $this->entityTypeManager();
     $currentUser = $this->currentUser();
-    $session = \Drupal::request()->getSession();
-    $cartSession = new CartSession($session);
-    // $cartProvider = new CartProvider($entityTM, $currentUser, $cartSession);
+    // Services.
     $cartProvider = \Drupal::service('commerce_cart.cart_provider');
-    // $eventDispatcher = new EventDispatcher();
-    // $orderItemMatcher = new OrderItemMatcher($eventDispatcher);
-    // $cartManager = new CartManager($entityTM, $orderItemMatcher, $eventDispatcher);
     $cartManager = \Drupal::service('commerce_cart.cart_manager');
-
     // Store & cart.
     $order_type = 'default';
     $store = $this->getStore();
